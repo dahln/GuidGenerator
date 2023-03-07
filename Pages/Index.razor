@@ -1,0 +1,49 @@
+﻿@page "/"
+@inject IToastService toastService
+@inject IJSRuntime JSRuntime
+
+<nav class="navbar bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <img src="/logo-name-only.svg" alt="Logo" height="35" class="d-inline-block align-text-top">
+    </a>
+  </div>
+</nav>
+
+<div class="row mt-5">
+    <div class="col-lg-12 text-center">
+        <span class="header">Guid Generator</span>
+    </div>
+</div>
+
+
+<div class="row mt-5">
+    <div class="col-lg-6 offset-lg-3 p-5">
+        <div class="input-group input-group-lg mb-3">
+            <input type="text" class="form-control" @bind="GeneratedGuid" readonly />
+            <button class="btn btn-primary" type="button" @onclick="GenerateGuid" title="Generate">
+                Generate
+            </button>
+            <button class="btn btn-success" type="button" @onclick="CopyGuid" title="Copy" disabled="@(string.IsNullOrEmpty(GeneratedGuid))">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private string GeneratedGuid { get; set; }
+
+    private void GenerateGuid()
+    {
+        GeneratedGuid = Guid.NewGuid().ToString().ToUpper();
+    }
+
+    private async Task CopyGuid()
+    {
+        await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", GeneratedGuid);
+        toastService.ShowSuccess("Copied");
+    }
+
+}
