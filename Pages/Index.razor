@@ -27,10 +27,7 @@
         <div class="input-group input-group-lg mb-3">
             <input type="text" class="form-control" @bind="GeneratedGuid" readonly />
             <button class="btn btn-primary" type="button" @onclick="GenerateGuid" title="Generate">
-                Generate
-            </button>
-            <button class="btn btn-success" type="button" @onclick="CopyGuid" title="Copy" disabled="@(string.IsNullOrEmpty(GeneratedGuid))">
-                <i class="fa-solid fa-copy"></i>
+                Generate &amp; Copy
             </button>
         </div>
     </div>
@@ -40,9 +37,10 @@
 
     private string GeneratedGuid { get; set; }
 
-    private void GenerateGuid()
+    private async Task GenerateGuid()
     {
         GeneratedGuid = Guid.NewGuid().ToString().ToUpper();
+        await CopyGuid();
     }
 
     private async Task CopyGuid()
