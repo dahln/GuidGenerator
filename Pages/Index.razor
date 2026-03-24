@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using QRCoder
 @inject IToastService toastService
 @inject IJSRuntime JSRuntime
 
@@ -33,13 +34,13 @@
     </div>
 </div>
 
-@if (!string.IsNullOrEmpty(GeneratedGuid))
+@if (!string.IsNullOrEmpty(QrCodeSvg))
 {
     <div class="row mt-4">
         <div class="col-12 col-lg-6 offset-lg-3 px-3 px-lg-5">
-            <div class="guid-string-section p-3">
-                <p class="guid-string-label mb-2">UUID v5 (Derived from GUID String Using SHA-1)</p>
-                <p class="guid-string-value mb-0">@GuidStringGuid</p>
+            <div class="guid-string-section p-3 text-center">
+                <p class="guid-string-label mb-2">QR Code</p>
+                @((MarkupString)QrCodeSvg)
             </div>
         </div>
     </div>
@@ -48,12 +49,14 @@
 @code {
 
     private string? GeneratedGuid { get; set; }
-    private string? GuidStringGuid { get; set; }
+    private string? QrCodeSvg { get; set; }
+
+    private readonly QRCodeGenerator _qrGenerator = new QRCodeGenerator();
 
     private async Task GenerateGuid()
     {
         GeneratedGuid = Guid.NewGuid().ToString().ToUpper();
-        GuidStringGuid = GenerateVersion5Guid(GeneratedGuid).ToString().ToUpper();
+        QrCodeSvg = GenerateQrCode(GeneratedGuid);
         await CopyGuid();
     }
 
@@ -63,42 +66,11 @@
         toastService.ShowSuccess("Copied");
     }
 
-    // UUID v5: deterministic GUID derived from the GUID string using SHA-1
-    private static readonly Guid UuidV5UrlNamespace = new Guid("6ba7b811-9dad-11d1-80b4-00c04fd430c8");
-
-    private static Guid GenerateVersion5Guid(string name)
+    private string GenerateQrCode(string value)
     {
-        var namespaceBytes = UuidV5UrlNamespace.ToByteArray();
-        SwapByteOrder(namespaceBytes);
-
-        var nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
-
-        byte[] hash;
-        using (var sha1 = System.Security.Cryptography.SHA1.Create())
-        {
-            sha1.TransformBlock(namespaceBytes, 0, namespaceBytes.Length, null, 0);
-            sha1.TransformFinalBlock(nameBytes, 0, nameBytes.Length);
-            hash = sha1.Hash!;
-        }
-
-        var guidBytes = new byte[16];
-        Array.Copy(hash, 0, guidBytes, 0, 16);
-
-        // Set version 5
-        guidBytes[6] = (byte)((guidBytes[6] & 0x0F) | 0x50);
-        // Set variant
-        guidBytes[8] = (byte)((guidBytes[8] & 0x3F) | 0x80);
-
-        SwapByteOrder(guidBytes);
-        return new Guid(guidBytes);
-    }
-
-    private static void SwapByteOrder(byte[] guid)
-    {
-        (guid[0], guid[3]) = (guid[3], guid[0]);
-        (guid[1], guid[2]) = (guid[2], guid[1]);
-        (guid[4], guid[5]) = (guid[5], guid[4]);
-        (guid[6], guid[7]) = (guid[7], guid[6]);
+        QRCodeData qrCodeData = _qrGenerator.CreateQrCode(value, QRCodeGenerator.ECCLevel.Q);
+        SvgQRCode qrCode = new SvgQRCode(qrCodeData);
+        return qrCode.GetGraphic(5);
     }
 
 }
