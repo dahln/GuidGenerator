@@ -24,15 +24,24 @@
 
 
 <div class="row mt-5">
-    <div class="col-12 col-lg-6 offset-lg-3 px-3 px-lg-5 pt-3 pb-0">
-        <div class="input-group input-group-lg mb-3">
-            <input type="text" class="form-control guid-input" @bind="GeneratedGuid" readonly />
-            <button class="btn btn-primary" type="button" @onclick="GenerateGuid" title="Generate">
-                Generate &amp; Copy
-            </button>
-        </div>
+    <div class="col-12 col-lg-6 offset-lg-3 px-3 px-lg-5 pt-3 pb-0 text-center">
+        <button class="btn btn-primary btn-lg" type="button" @onclick="GenerateGuid" title="Generate">
+            Generate &amp; Copy
+        </button>
     </div>
 </div>
+
+@if (!string.IsNullOrEmpty(GeneratedGuid))
+{
+    <div class="row mt-4">
+        <div class="col-12 col-lg-6 offset-lg-3 px-3 px-lg-5">
+            <div class="guid-string-section p-3 text-center">
+                <p class="guid-string-label mb-2">GUID</p>
+                <p class="guid-string-value mb-0">@GeneratedGuid</p>
+            </div>
+        </div>
+    </div>
+}
 
 @if (!string.IsNullOrEmpty(QrCodeSvg))
 {
